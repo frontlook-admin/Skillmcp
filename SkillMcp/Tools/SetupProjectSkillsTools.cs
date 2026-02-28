@@ -186,17 +186,22 @@ public sealed class SetupProjectSkillsTools
         if (string.IsNullOrWhiteSpace(path))
             return Directory.GetCurrentDirectory();
 
+        // Normalize to forward slashes and collapse any accidental double-slashes
+        // that can appear when callers pass already-escaped Windows paths.
+        static string Normalize(string p) =>
+            System.Text.RegularExpressions.Regex.Replace(p.Replace('\\', '/'), "/{2,}", "/");
+
         // When running inside Docker, translate Windows drive paths to the
-        // container-mounted equivalents (e.g. G:\Repos\foo -> /g/Repos/foo).
+        // container-mounted equivalents (e.g. G:\Repos\foo  ->  /g/Repos/foo).
         // The mcp.json mounts G:\Repos at /g/Repos in the container.
         if (path.Length >= 2 && path[1] == ':')
         {
             var driveLetter = char.ToLower(path[0]);
-            var rest = path.Substring(2).Replace('\\', '/');
-            return $"/{driveLetter}{rest}";
+            var rest = Normalize(path.Substring(2)).TrimStart('/');
+            return $"/{driveLetter}/{rest}";
         }
 
-        return path.Replace('\\', '/');
+        return Normalize(path);
     }
 
     private static string FormatCheckResult(SetupResult r)
