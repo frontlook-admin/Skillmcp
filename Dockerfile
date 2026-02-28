@@ -25,7 +25,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends git \
 COPY --from=build /app/publish .
 
 # Configurable skill source repository URL (default: https://github.com/github/awesome-copilot)
-ENV AWESOME_COPILOT_REPO_URL=""
+# NOTE: "PATH" is intentionally NOT set here — overriding the system PATH var would break the container.
+# It is injected at runtime by mcp.json via docker run --env.
+ENV URL=""
+ENV DICTIONARY=""
+ENV PROMT=""
 
 # MCP stdio server — no exposed ports needed; communicates via stdin/stdout
-ENTRYPOINT ["dotnet", "SkillMcp.dll"]
+ENTRYPOINT ["/usr/bin/dotnet", "SkillMcp.dll"]

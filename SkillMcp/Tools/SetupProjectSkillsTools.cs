@@ -69,7 +69,7 @@ public sealed class SetupProjectSkillsTools
                      "If omitted the tool searches well-known locations and auto-clones if needed.")]
         string? skillSourcePath = null,
         [Description("Git URL of the awesome-copilot repository to clone when not found locally. " +
-                     "Falls back to the AWESOME_COPILOT_REPO_URL environment variable, then " +
+                     "Falls back to the URL environment variable, then " +
                      $"the built-in default ({SkillSetupService.DefaultRepoUrl}).")]
         string? skillRepoUrl = null,
         CancellationToken cancellationToken = default)
@@ -112,7 +112,7 @@ public sealed class SetupProjectSkillsTools
                      "If omitted the tool searches well-known locations and auto-clones if needed.")]
         string? skillSourcePath = null,
         [Description("Git URL of the awesome-copilot repository to clone when not found locally. " +
-                     "Falls back to the AWESOME_COPILOT_REPO_URL environment variable, then " +
+                     "Falls back to the URL environment variable, then " +
                      $"the built-in default ({SkillSetupService.DefaultRepoUrl}).")]
         string? skillRepoUrl = null,
         CancellationToken cancellationToken = default)
@@ -154,7 +154,7 @@ public sealed class SetupProjectSkillsTools
                      "If omitted the tool searches well-known locations and auto-clones if needed.")]
         string? skillSourcePath = null,
         [Description("Git URL of the awesome-copilot repository to clone when not found locally. " +
-                     "Falls back to the AWESOME_COPILOT_REPO_URL environment variable, then " +
+                     "Falls back to the URL environment variable, then " +
                      $"the built-in default ({SkillSetupService.DefaultRepoUrl}).")]
         string? skillRepoUrl = null,
         CancellationToken cancellationToken = default)

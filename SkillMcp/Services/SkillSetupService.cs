@@ -100,7 +100,7 @@ public sealed class SkillSetupService
 
     /// <summary>
     /// Default repository to clone when awesome-copilot is not found locally.
-    /// Can be overridden via the AWESOME_COPILOT_REPO_URL environment variable
+    /// Can be overridden via the URL environment variable
     /// or the <c>skillRepoUrl</c> parameter on <see cref="SetupAsync"/>.
     /// </summary>
     public const string DefaultRepoUrl = "https://github.com/github/awesome-copilot";
@@ -116,7 +116,7 @@ public sealed class SkillSetupService
     /// <param name="skillSourcePath">Optional override for the awesome-copilot repo path.</param>
     /// <param name="skillRepoUrl">
     /// Git URL to clone when the repo is not found locally.
-    /// Falls back to the AWESOME_COPILOT_REPO_URL environment variable, then
+    /// Falls back to the URL environment variable, then
     /// <see cref="DefaultRepoUrl"/> (<c>https://github.com/github/awesome-copilot</c>).
     /// </param>
     public async Task<SetupResult> SetupAsync(
@@ -132,7 +132,7 @@ public sealed class SkillSetupService
         // Resolve effective repo URL: explicit param → env var → default
         var effectiveRepoUrl = !string.IsNullOrWhiteSpace(skillRepoUrl)
             ? skillRepoUrl
-            : Environment.GetEnvironmentVariable("AWESOME_COPILOT_REPO_URL") is { Length: > 0 } envUrl
+            : Environment.GetEnvironmentVariable("URL") is { Length: > 0 } envUrl
                 ? envUrl
                 : DefaultRepoUrl;
 

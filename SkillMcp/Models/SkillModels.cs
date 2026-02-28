@@ -38,3 +38,56 @@ public sealed record SetupResult(
     string? ManifestPath,
     string? SettingsPath,
     int TotalInstalled);
+
+// ── Skill Mapper models ───────────────────────────────────────────────────────
+
+/// <summary>
+/// Identifies a single skill repository source to load skills from.
+/// Multiple sources can be provided; skills are merged and deduplicated.
+/// </summary>
+/// <param name="Path">
+/// Local filesystem path to the skills folder (e.g. "awesome-copilot/skills/").
+/// </param>
+/// <param name="Dictionary">
+/// Optional path to a Markdown dictionary file with enriched metadata.
+/// </param>
+/// <param name="Label">
+/// Human-readable label used in output (e.g. the repo name or URL).
+/// </param>
+/// <param name="Url">
+/// Git clone URL. When <paramref name="Path"/> does not exist on disk the service
+/// will attempt to clone from this URL before loading skills.
+/// Example: https://github.com/github/awesome-copilot
+/// </param>
+public sealed record SkillRepoSource(string Path, string? Dictionary = null, string? Label = null, string? Url = null);
+
+/// <summary>
+/// Metadata for a single skill loaded from a skills repository.
+/// Populated either from a parsed dictionary file or by scanning SKILL.md files.
+/// </summary>
+public sealed record SkillEntry(
+    string Name,
+    string Description,
+    IReadOnlyList<string> Categories,
+    string? SourcePath = null,
+    string? RepoLabel = null);
+
+/// <summary>
+/// A skill that matched a mapping request, enriched with a relevance score.
+/// </summary>
+public sealed record RankedSkill(
+    string Name,
+    double Score,
+    string Description,
+    IReadOnlyList<string> Categories,
+    IReadOnlyList<string> MatchedKeywords,
+    string? RepoLabel = null);
+
+/// <summary>Result of a <c>map_project_skills</c> invocation.</summary>
+public sealed record SkillMappingResult(
+    string ProjectCode,
+    string UserSuggestions,
+    IReadOnlyList<RankedSkill> RankedSkills,
+    IReadOnlyList<string> AllCategories,
+    bool UsedDictionary,
+    IReadOnlyList<string> SourceNotes);

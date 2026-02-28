@@ -11,6 +11,7 @@ builder.Logging.AddConsole(options =>
 
 builder.Services.AddSingleton<ProjectTypeDetector>();
 builder.Services.AddSingleton<SkillSetupService>();
+builder.Services.AddSingleton<SkillMcp.Services.SkillMapperService>();
 
 builder.Services
     .AddMcpServer()
