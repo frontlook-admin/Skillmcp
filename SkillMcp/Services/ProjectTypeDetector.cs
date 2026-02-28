@@ -1,7 +1,7 @@
-using AgentWorkflowBuilderMcp.Models;
+using SkillMcp.Models;
 using Microsoft.Extensions.Logging;
 
-namespace AgentWorkflowBuilderMcp.Services;
+namespace SkillMcp.Services;
 
 /// <summary>
 /// Scans a project directory and infers its technology stack.

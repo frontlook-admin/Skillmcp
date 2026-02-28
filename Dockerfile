@@ -3,12 +3,12 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy project file and restore dependencies (cache layer)
-COPY AgentWorkflowBuilderMcp/AgentWorkflowBuilderMcp.csproj AgentWorkflowBuilderMcp/
-RUN dotnet restore AgentWorkflowBuilderMcp/AgentWorkflowBuilderMcp.csproj
+COPY SkillMcp/SkillMcp.csproj SkillMcp/
+RUN dotnet restore SkillMcp/SkillMcp.csproj
 
 # Copy source and publish
-COPY AgentWorkflowBuilderMcp/ AgentWorkflowBuilderMcp/
-RUN dotnet publish AgentWorkflowBuilderMcp/AgentWorkflowBuilderMcp.csproj \
+COPY SkillMcp/ SkillMcp/
+RUN dotnet publish SkillMcp/SkillMcp.csproj \
     -c Release \
     -o /app/publish \
     --no-restore
@@ -28,4 +28,4 @@ COPY --from=build /app/publish .
 ENV AWESOME_COPILOT_REPO_URL=""
 
 # MCP stdio server — no exposed ports needed; communicates via stdin/stdout
-ENTRYPOINT ["dotnet", "AgentWorkflowBuilderMcp.dll"]
+ENTRYPOINT ["dotnet", "SkillMcp.dll"]

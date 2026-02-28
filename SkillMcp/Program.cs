@@ -1,5 +1,5 @@
-using AgentWorkflowBuilderMcp.Services;
-using AgentWorkflowBuilderMcp.Tools;
+using SkillMcp.Services;
+using SkillMcp.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

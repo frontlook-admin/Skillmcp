@@ -1,4 +1,4 @@
-namespace AgentWorkflowBuilderMcp.Models;
+namespace SkillMcp.Models;
 
 /// <summary>
 /// A single skill repository source — a URL to clone and the sub-folder inside

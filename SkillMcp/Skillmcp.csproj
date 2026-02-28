@@ -5,8 +5,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>AgentWorkflowBuilderMcp</AssemblyName>
-    <RootNamespace>AgentWorkflowBuilderMcp</RootNamespace>
+    <AssemblyName>SkillMcp</AssemblyName>
+    <RootNamespace>SkillMcp</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

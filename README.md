@@ -92,7 +92,7 @@ Pass `skillSourcePath` as a tool argument pointing to `/opt/awesome-copilot` ins
 After publishing (see below), pull with:
 
 ```bash
-docker pull ghcr.io/<your-github-username>/skillmcp:latest
+docker pull ghcr.io/<your-github-username>/SkillMcp:latest
 ```
 
 ---

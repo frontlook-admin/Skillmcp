@@ -1,10 +1,10 @@
 using System.ComponentModel;
 using System.Text;
-using AgentWorkflowBuilderMcp.Models;
-using AgentWorkflowBuilderMcp.Services;
+using SkillMcp.Models;
+using SkillMcp.Services;
 using ModelContextProtocol.Server;
 
-namespace AgentWorkflowBuilderMcp.Tools;
+namespace SkillMcp.Tools;
 
 /// <summary>
 /// MCP tools that implement the setup-project-skills skill:

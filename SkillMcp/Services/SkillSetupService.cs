@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using AgentWorkflowBuilderMcp.Models;
+using SkillMcp.Models;
 using Microsoft.Extensions.Logging;
 
-namespace AgentWorkflowBuilderMcp.Services;
+namespace SkillMcp.Services;
 
 /// <summary>
 /// Resolves the awesome-copilot skill source repository, determines which skill
