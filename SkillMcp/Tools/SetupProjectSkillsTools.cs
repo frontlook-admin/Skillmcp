@@ -182,7 +182,22 @@ public sealed class SetupProjectSkillsTools
     // ── Formatting helpers ──────────────────────────────────────────────────
 
     private static string ResolveProject(string? path)
-        => string.IsNullOrWhiteSpace(path) ? Directory.GetCurrentDirectory() : path;
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return Directory.GetCurrentDirectory();
+
+        // When running inside Docker, translate Windows drive paths to the
+        // container-mounted equivalents (e.g. G:\Repos\foo -> /g/Repos/foo).
+        // The mcp.json mounts G:\Repos at /g/Repos in the container.
+        if (path.Length >= 2 && path[1] == ':')
+        {
+            var driveLetter = char.ToLower(path[0]);
+            var rest = path.Substring(2).Replace('\\', '/');
+            return $"/{driveLetter}{rest}";
+        }
+
+        return path.Replace('\\', '/');
+    }
 
     private static string FormatCheckResult(SetupResult r)
     {
