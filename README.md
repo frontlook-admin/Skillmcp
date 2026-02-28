@@ -61,7 +61,7 @@ You can override with the `skillSourcePath` parameter on any tool.
 ## Running Locally (dotnet)
 
 ```powershell
-cd AgentWorkflowBuilderMcp
+cd SkillMcp
 dotnet run
 ```
 
