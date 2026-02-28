@@ -1,0 +1,15 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# User-specific files
+*.user
+*.suo
+.vs/
+
+# Skills output (generated at runtime, not committed)
+skills/
+
+# OS
+.DS_Store
+Thumbs.db
