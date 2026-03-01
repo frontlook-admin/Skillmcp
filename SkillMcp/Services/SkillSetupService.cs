@@ -165,7 +165,7 @@ public sealed class SkillSetupService
         _logger.LogInformation("Skills selected: {Count}", allSkills.Count);
 
         // ── Diff against existing installation ──────────────────────────────
-        var skillsDest = Path.Combine(detection.ProjectRoot, "skills");
+        var skillsDest = Path.Combine(detection.ProjectRoot, ".github", "skills");
         var alreadyInstalled = Directory.Exists(skillsDest)
             ? Directory.GetDirectories(skillsDest).Select(Path.GetFileName).OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase)
             : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -194,6 +194,7 @@ public sealed class SkillSetupService
                 IsDryRun:  true,
                 ManifestPath: null,
                 SettingsPath: null,
+                InstructionsPath: null,
                 TotalInstalled: alreadyInstalled.Count);
         }
 
@@ -247,7 +248,7 @@ public sealed class SkillSetupService
             detectedAt  = DateTime.UtcNow.ToString("o"),
             sourcePath  = skillSourceDir,
             targetPath  = skillsDest,
-            skills      = installedDirs.Select(name => new { name, path = $@".\skills\{name}" }).ToArray()
+            skills      = installedDirs.Select(name => new { name, path = $@".\.github\skills\{name}" }).ToArray()
         };
 
         var jsonPath = Path.Combine(skillsDest, "skills.json");
@@ -260,6 +261,10 @@ public sealed class SkillSetupService
         // ── Update .vscode/settings.json ────────────────────────────────────
         var settingsPath = await UpdateVsCodeSettingsAsync(detection.ProjectRoot, cancellationToken);
 
+        // ── Write .github/instructions/skills.instructions.md ───────────────
+        var instructionsPath = await WriteSkillsInstructionsAsync(
+            detection.ProjectRoot, installedDirs, cancellationToken);
+
         return new SetupResult(
             DetectedProjectType: projectType,
             Added:     added,
@@ -270,6 +275,7 @@ public sealed class SkillSetupService
             IsDryRun:  false,
             ManifestPath: jsonPath,
             SettingsPath: settingsPath,
+            InstructionsPath: instructionsPath,
             TotalInstalled: installedDirs.Count);
     }
 
@@ -417,21 +423,23 @@ public sealed class SkillSetupService
             settings = new Dictionary<string, object>();
         }
 
-        // Ensure the promptFilesLocations key exists and contains our entry
+        // Ensure the promptFilesLocations key exists and contains both entries
         if (settings.TryGetValue("chat.promptFilesLocations", out var existingLocations)
             && existingLocations is JsonElement elem
             && elem.ValueKind == JsonValueKind.Object)
         {
             var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(elem.GetRawText())
                     ?? new Dictionary<string, object>();
-            dict["${workspaceFolder}/skills"] = true;
+            dict["${workspaceFolder}/.github/skills"]          = true;
+            dict["${workspaceFolder}/.github/instructions"]    = true;
             settings["chat.promptFilesLocations"] = dict;
         }
         else
         {
             settings["chat.promptFilesLocations"] = new Dictionary<string, object>
             {
-                ["${workspaceFolder}/skills"] = true
+                ["${workspaceFolder}/.github/skills"]       = true,
+                ["${workspaceFolder}/.github/instructions"] = true
             };
         }
 
@@ -442,5 +450,112 @@ public sealed class SkillSetupService
 
         _logger.LogInformation("VS Code settings updated: {Path}", settingsPath);
         return settingsPath;
+    }
+
+    /// <summary>
+    /// Generates <c>.github/instructions/skills.instructions.md</c> in the target project,
+    /// containing a routing table that maps task types to installed skill names and the
+    /// mandatory workflow that forces Copilot to read the full SKILL.md before responding.
+    /// </summary>
+    private async Task<string> WriteSkillsInstructionsAsync(
+        string projectRoot,
+        IReadOnlyList<string> installedSkills,
+        CancellationToken cancellationToken)
+    {
+        var instructionsDir  = Path.Combine(projectRoot, ".github", "instructions");
+        var instructionsPath = Path.Combine(instructionsDir, "skills.instructions.md");
+
+        Directory.CreateDirectory(instructionsDir);
+
+        // Determine the project name from the folder name for the header
+        var projectName = Path.GetFileName(projectRoot.TrimEnd('/', '\\')) is { Length: > 0 } n ? n : "this project";
+
+        var sb = new StringBuilder();
+        sb.AppendLine("---");
+        sb.AppendLine("applyTo: '**'");
+        sb.AppendLine("---");
+        sb.AppendLine();
+        sb.AppendLine($"# Skill Discovery — {projectName}");
+        sb.AppendLine();
+        sb.AppendLine("This repository ships a local skill library at `.github/skills/` (index: `.github/skills/skills.json`).");
+        sb.AppendLine("**Before starting any task, select the matching skill(s) below and read the full");
+        sb.AppendLine("`.github/skills/<name>/SKILL.md` file using the `read_file` tool.** Apply every rule,");
+        sb.AppendLine("pattern, and constraint documented in that file for the duration of the task.");
+        sb.AppendLine();
+        sb.AppendLine("---");
+        sb.AppendLine();
+        sb.AppendLine("## Skill Routing Table");
+        sb.AppendLine();
+        sb.AppendLine("Match the task to one or more skills and load their `SKILL.md` before proceeding.");
+        sb.AppendLine();
+        sb.AppendLine("| Task type | Skill to load |");
+        sb.AppendLine("|-----------|--------------|" );
+
+        foreach (var skill in installedSkills.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+        {
+            var description = await TryReadSkillDescriptionAsync(projectRoot, skill, cancellationToken)
+                ?? $"Tasks related to `{skill}`";
+
+            sb.AppendLine($"| {description} | `{skill}` |");
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("---");
+        sb.AppendLine();
+        sb.AppendLine("## Mandatory Workflow");
+        sb.AppendLine();
+        sb.AppendLine("1. **Identify** which skill(s) apply from the table above.");
+        sb.AppendLine("2. **Read** `.github/skills/<name>/SKILL.md` in full using `read_file` before writing any code or");
+        sb.AppendLine("   documentation. Multiple skills may be loaded in parallel.");
+        sb.AppendLine("3. **Apply** every rule, pattern, naming convention, and constraint from the skill for");
+        sb.AppendLine("   the entire response. Do not apply partial rules.");
+        sb.AppendLine("4. If no skill matches, proceed with the rules in `.github/copilot-instructions.md` only.");
+        sb.AppendLine();
+        sb.AppendLine("---");
+        sb.AppendLine();
+        sb.AppendLine("## Skill Paths (quick reference)");
+        sb.AppendLine();
+        sb.AppendLine("```");
+        foreach (var skill in installedSkills.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+            sb.AppendLine($".github/skills/{skill}/SKILL.md");
+        sb.AppendLine("```");
+
+        await File.WriteAllTextAsync(instructionsPath, sb.ToString(), cancellationToken);
+
+        _logger.LogInformation("Skills instructions written to {Path}", instructionsPath);
+        return instructionsPath;
+    }
+
+    /// <summary>
+    /// Reads the <c>description</c> field from the YAML frontmatter of a SKILL.md file
+    /// to populate the routing table in <c>skills.instructions.md</c>.
+    /// </summary>
+    private static async Task<string?> TryReadSkillDescriptionAsync(
+        string projectRoot, string skillName, CancellationToken cancellationToken)
+    {
+        var skillMdPath = Path.Combine(projectRoot, ".github", "skills", skillName, "SKILL.md");
+        if (!File.Exists(skillMdPath)) return null;
+
+        try
+        {
+            var lines = await File.ReadAllLinesAsync(skillMdPath, cancellationToken);
+            var inFrontmatter = false;
+            foreach (var line in lines)
+            {
+                if (line.Trim() == "---")
+                {
+                    if (!inFrontmatter) { inFrontmatter = true; continue; }
+                    break; // end of frontmatter
+                }
+                if (inFrontmatter && line.StartsWith("description:", StringComparison.OrdinalIgnoreCase))
+                {
+                    var value = line["description:".Length..].Trim().Trim('\'', '"');
+                    return string.IsNullOrWhiteSpace(value) ? null : value;
+                }
+            }
+        }
+        catch { /* best-effort */ }
+
+        return null;
     }
 }

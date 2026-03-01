@@ -37,6 +37,7 @@ public sealed record SetupResult(
     bool IsDryRun,
     string? ManifestPath,
     string? SettingsPath,
+    string? InstructionsPath,
     int TotalInstalled);
 
 // ── Skill Mapper models ───────────────────────────────────────────────────────

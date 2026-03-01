@@ -287,6 +287,9 @@ public sealed class SetupProjectSkillsTools
         if (r.SettingsPath is not null)
             sb.AppendLine($"VS Code settings : {r.SettingsPath}  (chat.promptFilesLocations updated)");
 
+        if (r.InstructionsPath is not null)
+            sb.AppendLine($"Skills routing   : {r.InstructionsPath}  (.github/instructions/skills.instructions.md written)");
+
         return sb.ToString();
     }
 }
